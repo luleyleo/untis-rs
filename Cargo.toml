@@ -1,6 +1,11 @@
 [package]
 name = "untis"
 version = "0.1.0"
-authors = ["Leopold Luley <acc@leopoldluley.de>"]
+authors = ["Leopold Luley <mail@leopoldluley.de>"]
 
 [dependencies]
+chrono = "0.4.0"
+reqwest = "0.8.5"
+serde = "1.0.29"
+serde_derive = "1.0.29"
+serde_json = "1.0.11"
