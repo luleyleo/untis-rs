@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 extern crate chrono;
 extern crate reqwest;
 extern crate serde;
