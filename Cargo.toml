@@ -1,5 +1,11 @@
 [package]
 name = "untis"
+description = "Rust library to access the webuntis jsonrpc"
+repository = "https://github.com/Finnerale/untis-rs"
+keywords = ["untis", "webuntis"]
+categories = ["api-bindings", "data-structures"]
+license = "MIT"
+readme = "README.md"
 version = "0.1.0"
 authors = ["Leopold Luley <mail@leopoldluley.de>"]
 
