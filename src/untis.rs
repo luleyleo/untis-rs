@@ -1,7 +1,7 @@
 use reqwest::header::Cookie;
 use reqwest;
 
-use chrono::{Date, Local};
+use chrono::NaiveDate;
 
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -9,6 +9,7 @@ use serde_json;
 
 use super::*;
 
+/// Provides access to webuntis.com
 pub struct Units {
     student: String,
     password: String,
@@ -20,6 +21,10 @@ pub struct Units {
 }
 
 impl Units {
+
+    /// The server and school name comes from the URL to access untis using a browser.
+    /// `https://SERVER.webuntis.com/WebUntis/jsonrpc.do?school=SCHOOL`
+    /// Username and password are required.
     pub fn new(server: &str, school: &str, student: &str, password: &str) -> Self {
         Units {
             student: student.to_owned(),
@@ -32,6 +37,7 @@ impl Units {
         }
     }
 
+    /// Creates a new session
     pub fn login(&mut self) -> Result<SessionInfo, Error> {
         let params = ParamsAuthenticate::new(self.student.clone(), self.password.clone());
         let request = RpcRequest::new("authenticate", params);
@@ -79,7 +85,7 @@ impl Units {
         self.retrieve("getSubjects", ())
     }
 
-    pub fn timetable(&self, id: usize, ty: usize, date: Date<Local>) -> Result<Timetable, Error> {
+    pub fn timetable(&self, id: usize, ty: usize, date: NaiveDate) -> Result<Timetable, Error> {
         let params = ParamsTimetable::new(id, ty, date);
         self.retrieve("getTimetable", params)
     }
@@ -88,6 +94,7 @@ impl Units {
         self.retrieve("getDepartments", ())
     }
 
+    /// Quits the current session
     pub fn logout(&mut self) -> Result<(), Error> {
         if self.session.is_none() { return Err(Error::NoSession) }
 

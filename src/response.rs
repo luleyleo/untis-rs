@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use date::UntisDate;
+use time::UntisTime;
 
 #[derive(Debug, Deserialize)]
 pub struct RpcResponse<R> {
@@ -41,8 +42,8 @@ pub struct HolidaysItem {
     pub id: usize,
     pub name: String,
     pub long_name: String,
-    pub start_date: usize,
-    pub end_date: usize,
+    pub start_date: UntisDate,
+    pub end_date: UntisDate,
 }
 
 pub type Rooms = Vec<RoomItem>;
@@ -101,8 +102,8 @@ pub type Timetable = Vec<TimetableItem>;
 pub struct TimetableItem {
     pub id: usize,
     pub date: UntisDate,
-    pub start_time: usize,
-    pub end_time: usize,
+    pub start_time: UntisTime,
+    pub end_time: UntisTime,
 
     #[serde(rename = "kl")]
     pub classes: Vec<IdItem>,

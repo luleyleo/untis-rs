@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use chrono::{Date, Local};
+use chrono::NaiveDate;
 
 use date::UntisDate;
 
@@ -53,7 +53,7 @@ pub struct ParamsTimetable {
 }
 
 impl ParamsTimetable {
-    pub fn new(id: usize, ty: usize, date: Date<Local>) -> Self {
+    pub fn new(id: usize, ty: usize, date: NaiveDate) -> Self {
         ParamsTimetable {
             id,
             ty,
