@@ -15,11 +15,10 @@ impl UntisDate {
     }
 
     pub fn week_end_from(date: NaiveDate) -> Self {
-        let day = date.day();
-        let days_from_monday = date.weekday().num_days_from_monday();
-        let days_left_till_friday = 5 - days_from_monday;
-        let friday = date.with_day(day + days_left_till_friday).unwrap();
-        UntisDate(friday)
+        let days_from_monday = date.weekday().num_days_from_monday() as i64;
+        let days_left_till_saturday = 5 - days_from_monday;
+        let saturday = date + Duration::days(days_left_till_saturday);
+        UntisDate(saturday)
     }
 
     pub fn week_begin() -> Self {
@@ -153,7 +152,7 @@ mod tests {
 
     #[test]
     fn untis_date_week_end_is_saturday() {
-        let monday = UntisDate::week_end();
-        assert_eq!(monday.0.weekday(), Weekday::Sat);
+        let saturday = UntisDate::week_end();
+        assert_eq!(saturday.0.weekday(), Weekday::Sat);
     }
 }
