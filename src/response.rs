@@ -105,6 +105,9 @@ pub struct TimetableItem {
     pub start_time: UntisTime,
     pub end_time: UntisTime,
 
+    #[serde(default)]
+    pub code: String,
+
     #[serde(rename = "kl")]
     pub classes: Vec<IdItem>,
 
