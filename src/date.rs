@@ -4,7 +4,7 @@ use chrono::{NaiveDate, Datelike, Duration, Local};
 use std::ops::Deref;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct UntisDate(NaiveDate);
 
 impl UntisDate {
