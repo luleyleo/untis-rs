@@ -4,7 +4,7 @@ use chrono::NaiveTime;
 use std::ops::Deref;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct UntisTime(NaiveTime);
 
 impl Deref for UntisTime {

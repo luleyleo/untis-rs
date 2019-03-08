@@ -9,7 +9,7 @@ pub struct RpcResponse<R> {
     pub result: R,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionInfo {
     pub session_id: String,
@@ -21,13 +21,13 @@ pub struct SessionInfo {
     pub person_type: usize,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct StatusData {
     pub lstypes: Vec<HashMap<String, StatusDataItem>>,
     pub codes: Vec<HashMap<String, StatusDataItem>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StatusDataItem {
     pub fore_color: String,
@@ -36,7 +36,7 @@ pub struct StatusDataItem {
 
 pub type Holidays = Vec<HolidaysItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HolidaysItem {
     pub id: usize,
@@ -48,7 +48,7 @@ pub struct HolidaysItem {
 
 pub type Rooms = Vec<RoomItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RoomItem {
     pub id: usize,
@@ -63,7 +63,7 @@ pub struct RoomItem {
 
 pub type Classes = Vec<ClassItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassItem {
     pub id: usize,
@@ -83,7 +83,7 @@ pub struct ClassItem {
 
 pub type Subjects = Vec<SubjectItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubjectItem {
     pub id: usize,
@@ -97,7 +97,7 @@ pub struct SubjectItem {
 
 pub type Timetable = Vec<TimetableItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TimetableItem {
     pub id: usize,
@@ -124,7 +124,7 @@ pub struct TimetableItem {
     pub activity_type: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct IdItem {
     pub id: isize,
 
@@ -133,7 +133,7 @@ pub struct IdItem {
 
 pub type Departments = Vec<DepartmentItem>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DepartmentItem {
     pub id: usize,
