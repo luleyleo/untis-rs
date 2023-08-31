@@ -1,15 +1,15 @@
 use chrono::NaiveDate;
 
-use crate::date::UntisDate;
+use crate::{datetime::Date, ElementType};
 
 #[derive(Serialize)]
-pub struct ParamsAuthenticate<'a> {
+pub struct Authenticate<'a> {
     client: &'a str,
     user: &'a str,
     password: &'a str,
 }
 
-impl<'a> ParamsAuthenticate<'a> {
+impl<'a> Authenticate<'a> {
     pub fn new(client: &'a str, user: &'a str, password: &'a str) -> Self {
         Self {
             client,
@@ -21,23 +21,23 @@ impl<'a> ParamsAuthenticate<'a> {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ParamsTimetable {
+pub struct Timetable {
     id: usize,
 
     #[serde(rename = "type")]
-    ty: usize,
+    ty: ElementType,
 
-    start_date: UntisDate,
-    end_date: UntisDate,
+    start_date: Date,
+    end_date: Date,
 }
 
-impl ParamsTimetable {
-    pub fn new(id: usize, ty: usize, date: NaiveDate) -> Self {
+impl Timetable {
+    pub fn new(id: usize, ty: ElementType, date: NaiveDate) -> Self {
         Self {
             id,
             ty,
-            start_date: UntisDate::week_begin_from(date),
-            end_date: UntisDate::week_end_from(date),
+            start_date: Date::week_begin_from(date),
+            end_date: Date::week_end_from(date),
         }
     }
 }

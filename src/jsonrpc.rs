@@ -1,7 +1,23 @@
 use crate::error;
 use serde::{de::DeserializeOwned, Serialize};
 
-#[derive(Serialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub enum ErrorCode {
+    UserBlocked = -8998,
+    NotAuthenticated = -8520,
+    NoAccess = -8509,
+    InvalidCredentials = -8504,
+    InvalidSchoolName = -8500,
+    TooManyResults = -6003,
+}
+
+impl ErrorCode {
+    pub fn value(&self) -> isize {
+        *self as isize
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Request<'a, P: Serialize> {
     jsonrpc: &'static str,
     id: &'a str,
@@ -20,7 +36,7 @@ impl<'a, P: Serialize> Request<'a, P> {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Response<'a, T> {
     Ok {
@@ -35,13 +51,13 @@ pub enum Response<'a, T> {
     },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Error {
     pub code: isize,
     pub message: String,
 }
 
-pub struct Client {
+pub(crate) struct Client {
     http_client: reqwest::blocking::Client,
     url: String,
     last_req_id: usize,
@@ -72,7 +88,7 @@ impl Client {
     ) -> Result<T, error::Error> {
         let req_id = &self.get_id();
         let request = Request::new(req_id, method, params);
-        let response = self.http_client.get(&self.url).json(&request).send()?;
+        let response = self.http_client.post(&self.url).json(&request).send()?;
 
         let status = response.status();
         if !status.is_success() {
@@ -93,7 +109,7 @@ impl Client {
                 jsonrpc: _,
                 id: _,
                 error,
-            } => Err(error::Error::RPC(error)),
+            } => Err(error::Error::Rpc(error)),
         }
     }
 }

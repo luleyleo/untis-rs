@@ -1,10 +1,40 @@
-use crate::date::UntisDate;
-use crate::time::UntisTime;
+use crate::datetime::{Date, Time};
+//use serde::ser::{Serialize, Serializer};
 use std::collections::HashMap;
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub enum ElementType {
+    Class = 1,
+    Teacher,
+    Subject,
+    Room,
+    Student,
+}
+
+impl ElementType {
+    pub fn value(&self) -> u8 {
+        *self as u8
+    }
+}
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionInfo {
+pub struct School {
+    pub server: String,
+    pub use_mobile_service_url_android: bool,
+    pub address: String,
+    pub display_name: String,
+    pub login_name: String,
+    #[serde(rename = "schoolId")]
+    pub id: usize,
+    pub use_mobile_service_url_ios: bool,
+    pub server_url: String,
+    pub mobile_service_url: Option<String>,
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Session {
     pub session_id: String,
 
     #[serde(rename = "klasseId")]
@@ -27,23 +57,19 @@ pub struct StatusDataItem {
     pub back_color: String,
 }
 
-pub type Holidays = Vec<HolidaysItem>;
-
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HolidaysItem {
+pub struct Holiday {
     pub id: usize,
     pub name: String,
     pub long_name: String,
-    pub start_date: UntisDate,
-    pub end_date: UntisDate,
+    pub start_date: Date,
+    pub end_date: Date,
 }
-
-pub type Rooms = Vec<RoomItem>;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RoomItem {
+pub struct Room {
     pub id: usize,
     pub name: String,
     pub long_name: String,
@@ -54,11 +80,9 @@ pub struct RoomItem {
     pub did: Option<usize>,
 }
 
-pub type Classes = Vec<ClassItem>;
-
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ClassItem {
+pub struct Class {
     pub id: usize,
     pub name: String,
     pub long_name: String,
@@ -74,11 +98,9 @@ pub struct ClassItem {
     pub teacher2: isize,
 }
 
-pub type Subjects = Vec<SubjectItem>;
-
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SubjectItem {
+pub struct Subject {
     pub id: usize,
     pub name: String,
     pub long_name: String,
@@ -88,15 +110,32 @@ pub struct SubjectItem {
     pub back_color: Option<String>,
 }
 
-pub type Timetable = Vec<TimetableItem>;
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Teacher {
+    pub id: usize,
+    pub name: String,
+
+    #[serde(rename = "foreName")]
+    pub first_name: String,
+
+    #[serde(rename = "longName")]
+    pub last_name: String,
+
+    pub title: String,
+    pub active: bool,
+    pub dids: Vec<IdItem>,
+}
+
+pub type Timetable = Vec<Lesson>;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TimetableItem {
+pub struct Lesson {
     pub id: usize,
-    pub date: UntisDate,
-    pub start_time: UntisTime,
-    pub end_time: UntisTime,
+    pub date: Date,
+    pub start_time: Time,
+    pub end_time: Time,
 
     #[serde(default)]
     pub code: String,
@@ -120,15 +159,14 @@ pub struct TimetableItem {
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct IdItem {
     pub id: isize,
-
     pub orgid: Option<isize>,
 }
 
-pub type Departments = Vec<DepartmentItem>;
+pub type Departments = Vec<Department>;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DepartmentItem {
+pub struct Department {
     pub id: usize,
     pub name: String,
     pub long_name: String,
@@ -137,6 +175,7 @@ pub struct DepartmentItem {
 fn default_id() -> isize {
     -1
 }
+
 fn default_activity_type() -> String {
-    "undefined".to_owned()
+    String::from("undefined")
 }

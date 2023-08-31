@@ -10,17 +10,14 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-mod date;
+mod client;
+mod datetime;
 mod error;
-mod jsonrpc;
-mod request;
-mod response;
-mod time;
-mod untis;
+pub mod jsonrpc;
+pub mod params;
+mod resources;
 
-pub use date::UntisDate;
+pub use client::Client;
+pub use datetime::*;
 pub use error::Error;
-pub use request::*;
-pub use response::*;
-pub use time::UntisTime;
-pub use untis::Units;
+pub use resources::*;
