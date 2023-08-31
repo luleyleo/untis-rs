@@ -94,6 +94,17 @@ impl Client {
     }
 }
 
+impl School {
+    pub fn new_client(self, username: &str, password: &str) -> Client {
+        Client::new(
+            self.server.as_str(),
+            self.login_name.as_str(),
+            username,
+            password,
+        )
+    }
+}
+
 fn make_untis_url(server: &str, school: &str) -> String {
     format!("https://{}/WebUntis/jsonrpc.do?school={}", server, school)
 }

@@ -3,6 +3,14 @@ use chrono::NaiveDate;
 use crate::{datetime::Date, ElementType};
 
 #[derive(Serialize)]
+#[serde(untagged)]
+pub(crate) enum FindSchool<'a> {
+    Search { search: &'a str },
+    ById { schoolid: usize },
+    ByName { schoolname: &'a str },
+}
+
+#[derive(Serialize)]
 pub struct Authenticate<'a> {
     client: &'a str,
     user: &'a str,

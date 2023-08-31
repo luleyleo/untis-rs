@@ -16,8 +16,10 @@ mod error;
 pub mod jsonrpc;
 pub mod params;
 mod resources;
+mod school_search;
 
 pub use client::Client;
 pub use datetime::*;
 pub use error::Error;
 pub use resources::*;
+pub use school_search::*;
