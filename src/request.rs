@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use chrono::NaiveDate;
 
-use date::UntisDate;
+use crate::date::UntisDate;
 
 #[derive(Serialize)]
 pub struct RpcRequest<P: Serialize> {

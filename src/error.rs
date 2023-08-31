@@ -1,8 +1,8 @@
-use std;
-use std::fmt::{self, Display, Formatter};
-use std::convert::From;
 use reqwest;
 use serde_json;
+use std;
+use std::convert::From;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug)]
 pub enum Error {
@@ -14,23 +14,14 @@ pub enum Error {
 
 impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
-        let msg = match *self {
-            Error::Http(ref status) => format!("Http error with status code: {}", status),
-            _ => std::error::Error::description(self).to_owned(),
+        let msg = match self {
+            Self::Reqwest(err) => err.to_string(),
+            Self::SerdeJSON(err) => err.to_string(),
+            Self::Http(status) => format!("Http error with status code: {}", status),
+            Self::NoSession => String::from("Not logged into WebUntis"),
         };
 
         formatter.write_str(&msg)
-    }
-}
-
-impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Reqwest(ref err) => err.description(),
-            Error::SerdeJSON(ref err) => err.description(),
-            Error::Http(_) => "The Http request didn't succeed.",
-            Error::NoSession => "This method can't be called without a session.",
-        }
     }
 }
 

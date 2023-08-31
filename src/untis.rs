@@ -1,10 +1,9 @@
-use reqwest::header::Cookie;
 use reqwest;
 
 use chrono::NaiveDate;
 
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use serde_json;
 
 use super::*;
@@ -15,24 +14,26 @@ pub struct Units {
     password: String,
     url: String,
 
-    cookie: Cookie,
-    client: reqwest::Client,
+    client: reqwest::blocking::Client,
     session: Option<SessionInfo>,
 }
 
 impl Units {
-
     /// The server and school name comes from the URL to access untis using a browser.
     /// `https://SERVER.webuntis.com/WebUntis/jsonrpc.do?school=SCHOOL`
     /// Username and password are required.
     pub fn new(server: &str, school: &str, student: &str, password: &str) -> Self {
+        let client = reqwest::blocking::Client::builder()
+            .cookie_store(true)
+            .build()
+            .unwrap();
+
         Units {
             student: student.to_owned(),
             password: password.to_owned(),
             url: make_untis_url(server, school),
 
-            cookie: Cookie::new(),
-            client: reqwest::Client::new(),
+            client,
             session: None,
         }
     }
@@ -42,9 +43,7 @@ impl Units {
         let params = ParamsAuthenticate::new(self.student.clone(), self.password.clone());
         let request = RpcRequest::new("authenticate", params);
 
-        let mut re = self.get()
-            .json(&request)
-            .send()?;
+        let re = self.get().json(&request).send()?;
 
         let status = re.status();
 
@@ -52,7 +51,6 @@ impl Units {
             let resp = re.text()?;
             let response: RpcResponse<SessionInfo> = serde_json::from_str(&resp)?;
             let result = response.result;
-            self.cookie.append("JSESSIONID", result.session_id.clone());
             self.session = Some(result.clone());
 
             Ok(result)
@@ -96,13 +94,13 @@ impl Units {
 
     /// Quits the current session
     pub fn logout(&mut self) -> Result<(), Error> {
-        if self.session.is_none() { return Err(Error::NoSession) }
+        if self.session.is_none() {
+            return Err(Error::NoSession);
+        }
 
         let request = RpcRequest::new("logout", ());
 
-        let re = self.get()
-            .json(&request)
-            .send()?;
+        let re = self.get().json(&request).send()?;
 
         let status = re.status();
 
@@ -113,19 +111,22 @@ impl Units {
         }
     }
 
-    fn get(&self) -> reqwest::RequestBuilder {
+    fn get(&self) -> reqwest::blocking::RequestBuilder {
         self.client.get(&self.url)
     }
 
-    fn retrieve<T: DeserializeOwned, P: Serialize>(&self, method: &'static str, params: P) -> Result<T, Error> {
-        if self.session.is_none() { return Err(Error::NoSession) }
+    fn retrieve<T: DeserializeOwned, P: Serialize>(
+        &self,
+        method: &'static str,
+        params: P,
+    ) -> Result<T, Error> {
+        if self.session.is_none() {
+            return Err(Error::NoSession);
+        }
 
         let request = RpcRequest::new(method, params);
 
-        let mut re = self.get()
-            .header(self.cookie.clone())
-            .json(&request)
-            .send()?;
+        let re = self.get().json(&request).send()?;
 
         let status = re.status();
 
@@ -142,7 +143,6 @@ impl Units {
 fn make_untis_url(server: &str, school: &str) -> String {
     format!(
         "https://{}.webuntis.com/WebUntis/jsonrpc.do?school={}",
-        server,
-        school
+        server, school
     )
 }

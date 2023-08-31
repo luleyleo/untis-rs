@@ -1,8 +1,8 @@
-use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+use chrono::{Datelike, Duration, Local, NaiveDate};
 use serde::de::Visitor;
-use chrono::{NaiveDate, Datelike, Duration, Local};
-use std::ops::Deref;
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
+use std::ops::Deref;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct UntisDate(NaiveDate);
@@ -22,11 +22,11 @@ impl UntisDate {
     }
 
     pub fn week_begin() -> Self {
-        Self::week_begin_from(Local::today().naive_local())
+        Self::week_begin_from(Local::now().date_naive())
     }
 
     pub fn week_end() -> Self {
-        Self::week_end_from(Local::today().naive_local())
+        Self::week_end_from(Local::now().date_naive())
     }
 }
 
@@ -67,49 +67,57 @@ impl<'de> Visitor<'de> for UntisDateVisitor {
     }
 
     fn visit_i8<E>(self, value: i8) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_i16<E>(self, value: i16) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_i32<E>(self, value: i32) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_u8<E>(self, value: u8) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_u16<E>(self, value: u16) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
 
     fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-        where E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         Ok(UntisDate(chrono_from_untis_date(value as u32)))
     }
@@ -127,7 +135,7 @@ fn chrono_from_untis_date(value: u32) -> NaiveDate {
     let month = string[4..6].parse::<u32>().unwrap();
     let day = string[6..8].parse::<u32>().unwrap();
 
-    NaiveDate::from_ymd(year, month, day)
+    NaiveDate::from_ymd_opt(year, month, day).unwrap()
 }
 
 #[cfg(test)]

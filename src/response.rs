@@ -1,6 +1,6 @@
+use crate::date::UntisDate;
+use crate::time::UntisTime;
 use std::collections::HashMap;
-use date::UntisDate;
-use time::UntisTime;
 
 #[derive(Debug, Deserialize)]
 pub struct RpcResponse<R> {
@@ -141,5 +141,9 @@ pub struct DepartmentItem {
     pub long_name: String,
 }
 
-fn default_id() -> isize { -1 }
-fn default_activity_type() -> String { "undefined".to_owned() }
+fn default_id() -> isize {
+    -1
+}
+fn default_activity_type() -> String {
+    "undefined".to_owned()
+}
