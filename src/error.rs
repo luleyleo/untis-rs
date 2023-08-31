@@ -4,11 +4,14 @@ use std;
 use std::convert::From;
 use std::fmt::{self, Display, Formatter};
 
+use crate::jsonrpc;
+
 #[derive(Debug)]
 pub enum Error {
     Reqwest(reqwest::Error),
     SerdeJSON(serde_json::Error),
     Http(reqwest::StatusCode),
+    RPC(jsonrpc::Error),
     NoSession,
 }
 
@@ -19,6 +22,7 @@ impl Display for Error {
             Self::SerdeJSON(err) => err.to_string(),
             Self::Http(status) => format!("Http error with status code: {}", status),
             Self::NoSession => String::from("Not logged into WebUntis"),
+            Self::RPC(_) => todo!(),
         };
 
         formatter.write_str(&msg)

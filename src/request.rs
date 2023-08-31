@@ -1,40 +1,19 @@
-use serde::Serialize;
-
 use chrono::NaiveDate;
 
 use crate::date::UntisDate;
 
 #[derive(Serialize)]
-pub struct RpcRequest<P: Serialize> {
-    id: &'static str,
-    method: &'static str,
-    jsonrpc: &'static str,
-    params: P,
+pub struct ParamsAuthenticate<'a> {
+    client: &'a str,
+    user: &'a str,
+    password: &'a str,
 }
 
-impl<P: Serialize> RpcRequest<P> {
-    pub fn new(method: &'static str, params: P) -> Self {
-        RpcRequest {
-            id: "ID",
-            method,
-            jsonrpc: "2.0",
-            params,
-        }
-    }
-}
-
-#[derive(Serialize)]
-pub struct ParamsAuthenticate {
-    user: String,
-    client: &'static str,
-    password: String,
-}
-
-impl ParamsAuthenticate {
-    pub fn new(user: String, password: String) -> Self {
-        ParamsAuthenticate {
+impl<'a> ParamsAuthenticate<'a> {
+    pub fn new(client: &'a str, user: &'a str, password: &'a str) -> Self {
+        Self {
+            client,
             user,
-            client: "untis-rs",
             password,
         }
     }
@@ -54,7 +33,7 @@ pub struct ParamsTimetable {
 
 impl ParamsTimetable {
     pub fn new(id: usize, ty: usize, date: NaiveDate) -> Self {
-        ParamsTimetable {
+        Self {
             id,
             ty,
             start_date: UntisDate::week_begin_from(date),

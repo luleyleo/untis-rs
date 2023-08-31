@@ -2,13 +2,6 @@ use crate::date::UntisDate;
 use crate::time::UntisTime;
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize)]
-pub struct RpcResponse<R> {
-    pub jsonrpc: String,
-    pub id: String,
-    pub result: R,
-}
-
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionInfo {

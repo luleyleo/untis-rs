@@ -12,6 +12,7 @@ extern crate serde_derive;
 
 mod date;
 mod error;
+mod jsonrpc;
 mod request;
 mod response;
 mod time;
