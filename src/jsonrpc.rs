@@ -12,13 +12,13 @@ pub enum ErrorCode {
 }
 
 impl ErrorCode {
-    pub fn value(&self) -> isize {
+    pub fn as_isize(&self) -> isize {
         *self as isize
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
-pub struct Request<'a, P: Serialize> {
+pub(crate) struct Request<'a, P: Serialize> {
     jsonrpc: &'static str,
     id: &'a str,
     method: &'a str,
@@ -36,17 +36,17 @@ impl<'a, P: Serialize> Request<'a, P> {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum Response<'a, T> {
+pub(crate) enum Response<T> {
     Ok {
-        jsonrpc: &'a str,
-        id: &'a str,
+        jsonrpc: String,
+        id: serde_json::Value,
         result: T,
     },
     Err {
-        jsonrpc: &'a str,
-        id: &'a str,
+        jsonrpc: String,
+        id: String,
         error: Error,
     },
 }
@@ -64,14 +64,14 @@ pub(crate) struct Client {
 }
 
 impl Client {
-    pub fn new(url: String) -> Self {
+    pub fn new(url: &str) -> Self {
         let client = reqwest::blocking::Client::builder()
             .cookie_store(true)
             .build()
             .unwrap();
         Self {
             http_client: client,
-            url,
+            url: url.to_string(),
             last_req_id: 0,
         }
     }

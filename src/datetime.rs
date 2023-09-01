@@ -8,25 +8,33 @@ use std::ops::Deref;
 pub struct Date(NaiveDate);
 
 impl Date {
-    pub fn week_begin_from(date: NaiveDate) -> Self {
-        let days_from_monday = date.weekday().num_days_from_monday();
-        let monday = date - Duration::days(days_from_monday as i64);
+    pub fn today() -> Self {
+        Date(Local::now().date_naive())
+    }
+
+    pub fn current_week_begin() -> Self {
+        Self::today().relative_week_begin()
+    }
+
+    pub fn current_week_end() -> Self {
+        Self::today().relative_week_end()
+    }
+
+    pub fn relative_week_begin(&self) -> Self {
+        let days_from_monday = self.weekday().num_days_from_monday();
+        let monday = self.0 - Duration::days(days_from_monday as i64);
         Date(monday)
     }
 
-    pub fn week_end_from(date: NaiveDate) -> Self {
-        let days_from_monday = date.weekday().num_days_from_monday() as i64;
+    pub fn relative_week_end(&self) -> Self {
+        let days_from_monday = self.weekday().num_days_from_monday() as i64;
         let days_left_till_saturday = 5 - days_from_monday;
-        let saturday = date + Duration::days(days_left_till_saturday);
+        let saturday = self.0 + Duration::days(days_left_till_saturday);
         Date(saturday)
     }
 
-    pub fn week_begin() -> Self {
-        Self::week_begin_from(Local::now().date_naive())
-    }
-
-    pub fn week_end() -> Self {
-        Self::week_end_from(Local::now().date_naive())
+    pub fn to_chrono(&self) -> NaiveDate {
+        self.0
     }
 }
 
@@ -110,6 +118,12 @@ fn chrono_from_untis_date(value: u32) -> NaiveDate {
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Time(NaiveTime);
+
+impl Time {
+    pub fn to_chrono(&self) -> NaiveTime {
+        self.0
+    }
+}
 
 impl Deref for Time {
     type Target = NaiveTime;
@@ -204,13 +218,13 @@ mod tests {
 
     #[test]
     fn untis_date_week_begin_is_monday() {
-        let monday = Date::week_begin();
+        let monday = Date::current_week_begin();
         assert_eq!(monday.0.weekday(), Weekday::Mon);
     }
 
     #[test]
     fn untis_date_week_end_is_saturday() {
-        let saturday = Date::week_end();
+        let saturday = Date::current_week_end();
         assert_eq!(saturday.0.weekday(), Weekday::Sat);
     }
 

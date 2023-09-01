@@ -1,107 +1,151 @@
-use chrono::NaiveDate;
-use serde::{de::DeserializeOwned, ser::Serialize};
-
-use crate::*;
+use crate::{datetime::Date, error::Error, jsonrpc, params, resources::*, Session};
 
 /// Provides access to webuntis.com
 pub struct Client {
-    client_name: String,
-    username: String,
-    password: String,
     rpc_client: jsonrpc::Client,
-    session: Option<Session>,
+    session: Session,
 }
 
 impl Client {
     /// The server and school name comes from the URL to access untis using a browser.
-    /// `https://SERVER.webuntis.com/WebUntis/jsonrpc.do?school=SCHOOL`
+    /// `https://SERVER/WebUntis/jsonrpc.do?school=SCHOOL`
     /// Username and password are required.
-    pub fn new(server: &str, school: &str, username: &str, password: &str) -> Self {
-        Self {
-            client_name: String::from("untis-rs"),
-            username: username.to_string(),
-            password: password.to_string(),
-            rpc_client: jsonrpc::Client::new(make_untis_url(server, school)),
-            session: None,
-        }
+    pub fn login(
+        server: &str,
+        school: &str,
+        username: &str,
+        password: &str,
+    ) -> Result<Self, Error> {
+        let params = params::AuthenticateParams {
+            client: "untis-rs",
+            user: username,
+            password: password,
+        };
+        let mut rpc_client = jsonrpc::Client::new(&make_untis_url(server, school));
+        let session: Session = rpc_client.request("authenticate", params)?;
+        Ok(Self {
+            rpc_client,
+            session,
+        })
     }
 
-    fn request<T: DeserializeOwned, P: Serialize>(
-        &mut self,
-        method: &'static str,
-        params: P,
-    ) -> Result<T, Error> {
-        if self.session.is_none() {
-            return Err(Error::NoSession);
-        }
-
-        self.rpc_client.request(method, params)
-    }
-
-    /// Creates a new session
-    pub fn login(&mut self) -> Result<Session, Error> {
-        let params = params::Authenticate::new(&self.client_name, &self.username, &self.password);
-        let session: Session = self.rpc_client.request("authenticate", params)?;
-        self.session = Some(session.clone());
-        Ok(session)
-    }
-
-    pub fn session(&self) -> Option<&Session> {
-        self.session.as_ref()
+    pub fn session(&self) -> &Session {
+        &self.session
     }
 
     pub fn status_data(&mut self) -> Result<StatusData, Error> {
-        self.request("getStatusData", ())
+        self.rpc_client.request("getStatusData", ())
     }
 
     pub fn holidays(&mut self) -> Result<Vec<Holiday>, Error> {
-        self.request("getHolidays", ())
+        self.rpc_client.request("getHolidays", ())
     }
 
     pub fn rooms(&mut self) -> Result<Vec<Room>, Error> {
-        self.request("getRooms", ())
+        self.rpc_client.request("getRooms", ())
     }
 
     pub fn classes(&mut self) -> Result<Vec<Class>, Error> {
-        self.request("getKlassen", ())
+        self.rpc_client.request("getKlassen", ())
     }
 
     pub fn subjects(&mut self) -> Result<Vec<Subject>, Error> {
-        self.request("getSubjects", ())
+        self.rpc_client.request("getSubjects", ())
     }
 
     pub fn teachers(&mut self) -> Result<Vec<Teacher>, Error> {
-        self.request("getTeachers", ())
+        self.rpc_client.request("getTeachers", ())
     }
 
-    pub fn timetable(
+    pub fn students(&mut self) -> Result<Vec<Student>, Error> {
+        self.rpc_client.request("getStudents", ())
+    }
+
+    pub fn own_timetable_until(&mut self, end_date: &Date) -> Result<Timetable, Error> {
+        self.own_timetable_between(&Date::today(), end_date)
+    }
+
+    pub fn own_timetable_current_week(&mut self) -> Result<Timetable, Error> {
+        self.own_timetable_for_week(&Date::today())
+    }
+
+    pub fn own_timetable_for_week(&mut self, date: &Date) -> Result<Timetable, Error> {
+        self.own_timetable_between(&date.relative_week_begin(), &date.relative_week_end())
+    }
+
+    pub fn own_timetable_between(
         &mut self,
-        id: usize,
-        ty: ElementType,
-        date: NaiveDate,
+        start_date: &Date,
+        end_date: &Date,
     ) -> Result<Timetable, Error> {
-        let params = params::Timetable::new(id, ty, date);
-        self.request("getTimetable", params)
+        self.timetable_between(
+            &self.session.person_id.clone(),
+            &self.session.person_type.clone(),
+            start_date,
+            end_date,
+        )
+    }
+
+    pub fn timetable_until(
+        &mut self,
+        id: &usize,
+        ty: &ElementType,
+        end_date: &Date,
+    ) -> Result<Timetable, Error> {
+        self.timetable_between(id, ty, &Date::today(), end_date)
+    }
+
+    pub fn timetable_current_week(
+        &mut self,
+        id: &usize,
+        ty: &ElementType,
+    ) -> Result<Timetable, Error> {
+        self.timetable_for_week(id, ty, &Date::today())
+    }
+
+    pub fn timetable_for_week(
+        &mut self,
+        id: &usize,
+        ty: &ElementType,
+        date: &Date,
+    ) -> Result<Timetable, Error> {
+        self.timetable_between(
+            id,
+            ty,
+            &date.relative_week_begin(),
+            &date.relative_week_end(),
+        )
+    }
+
+    pub fn timetable_between(
+        &mut self,
+        id: &usize,
+        ty: &ElementType,
+        start_date: &Date,
+        end_date: &Date,
+    ) -> Result<Timetable, Error> {
+        let params = params::TimetableParams {
+            id,
+            ty,
+            start_date,
+            end_date,
+        };
+        self.rpc_client.request("getTimetable", params)
     }
 
     pub fn departments(&mut self) -> Result<Departments, Error> {
-        self.request("getDepartments", ())
+        self.rpc_client.request("getDepartments", ())
     }
 
     /// Quits the current session
     pub fn logout(mut self) -> Result<(), Error> {
-        self.request("logout", ())
+        self.rpc_client.request("logout", ())
     }
 }
 
 impl School {
-    pub fn new_client(self, username: &str, password: &str) -> Client {
-        Client::new(
-            self.server.as_str(),
-            self.login_name.as_str(),
-            username,
-            password,
-        )
+    pub fn client_login(self, username: &str, password: &str) -> Result<Client, Error> {
+        Client::login(&self.server, &self.login_name, username, password)
     }
 }
 

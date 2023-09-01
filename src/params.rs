@@ -1,51 +1,28 @@
-use chrono::NaiveDate;
-
 use crate::{datetime::Date, ElementType};
 
 #[derive(Serialize)]
 #[serde(untagged)]
-pub(crate) enum FindSchool<'a> {
+pub enum FindSchoolParams<'a> {
     Search { search: &'a str },
-    ById { schoolid: usize },
+    ById { schoolid: &'a usize },
     ByName { schoolname: &'a str },
 }
 
 #[derive(Serialize)]
-pub struct Authenticate<'a> {
-    client: &'a str,
-    user: &'a str,
-    password: &'a str,
-}
-
-impl<'a> Authenticate<'a> {
-    pub fn new(client: &'a str, user: &'a str, password: &'a str) -> Self {
-        Self {
-            client,
-            user,
-            password,
-        }
-    }
+pub struct AuthenticateParams<'a> {
+    pub client: &'static str,
+    pub user: &'a str,
+    pub password: &'a str,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Timetable {
-    id: usize,
+pub struct TimetableParams<'a> {
+    pub id: &'a usize,
 
     #[serde(rename = "type")]
-    ty: ElementType,
+    pub ty: &'a ElementType,
 
-    start_date: Date,
-    end_date: Date,
-}
-
-impl Timetable {
-    pub fn new(id: usize, ty: ElementType, date: NaiveDate) -> Self {
-        Self {
-            id,
-            ty,
-            start_date: Date::week_begin_from(date),
-            end_date: Date::week_end_from(date),
-        }
-    }
+    pub start_date: &'a Date,
+    pub end_date: &'a Date,
 }

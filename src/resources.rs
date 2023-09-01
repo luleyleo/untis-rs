@@ -1,8 +1,11 @@
 use crate::datetime::{Date, Time};
-//use serde::ser::{Serialize, Serializer};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Serialize_repr, Deserialize_repr, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug,
+)]
+#[repr(u8)]
 pub enum ElementType {
     Class = 1,
     Teacher,
@@ -12,9 +15,15 @@ pub enum ElementType {
 }
 
 impl ElementType {
-    pub fn value(&self) -> u8 {
+    pub fn as_u8(&self) -> u8 {
         *self as u8
     }
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
+pub(crate) struct SchoolSearchResult {
+    pub size: usize,
+    pub schools: Vec<School>,
 }
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
@@ -32,7 +41,7 @@ pub struct School {
     pub mobile_service_url: Option<String>,
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {
     pub session_id: String,
@@ -41,7 +50,7 @@ pub struct Session {
     pub class_id: usize,
 
     pub person_id: usize,
-    pub person_type: usize,
+    pub person_type: ElementType,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
@@ -125,6 +134,22 @@ pub struct Teacher {
     pub title: String,
     pub active: bool,
     pub dids: Vec<IdItem>,
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Student {
+    pub id: usize,
+    pub key: String,
+    pub name: String,
+
+    #[serde(rename = "foreName")]
+    pub first_name: String,
+
+    #[serde(rename = "longName")]
+    pub last_name: String,
+
+    pub gender: String,
 }
 
 pub type Timetable = Vec<Lesson>;
