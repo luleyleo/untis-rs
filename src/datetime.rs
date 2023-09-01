@@ -4,28 +4,34 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::ops::Deref;
 
+/// Wrapper around chrono::NaiveDate for working with Untis more easily.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct Date(NaiveDate);
+pub struct Date(pub NaiveDate);
 
 impl Date {
+    /// Returns the current date.
     pub fn today() -> Self {
         Date(Local::now().date_naive())
     }
 
+    /// Returns the last start of the week (monday).
     pub fn current_week_begin() -> Self {
         Self::today().relative_week_begin()
     }
 
+    /// Returns the next end of the week (saturday).
     pub fn current_week_end() -> Self {
         Self::today().relative_week_end()
     }
 
+    /// Returns the last start of the week before this date.
     pub fn relative_week_begin(&self) -> Self {
         let days_from_monday = self.weekday().num_days_from_monday();
         let monday = self.0 - Duration::days(days_from_monday as i64);
         Date(monday)
     }
 
+    /// Returns the next end of the week (saturday) after this date.
     pub fn relative_week_end(&self) -> Self {
         let days_from_monday = self.weekday().num_days_from_monday() as i64;
         let days_left_till_saturday = 5 - days_from_monday;
@@ -33,6 +39,7 @@ impl Date {
         Date(saturday)
     }
 
+    /// Returns the inner `NaiveDate`.
     pub fn to_chrono(&self) -> NaiveDate {
         self.0
     }
@@ -68,35 +75,7 @@ impl<'de> Visitor<'de> for DateVisitor {
             .write_str("an integer in the format YEARMONTHDAY like 20180316 for the 16. March 2018")
     }
 
-    fn visit_i8<E: serde::de::Error>(self, value: i8) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_i16<E: serde::de::Error>(self, value: i16) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_i32<E: serde::de::Error>(self, value: i32) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_i64<E: serde::de::Error>(self, value: i64) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_u8<E: serde::de::Error>(self, value: u8) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_u16<E: serde::de::Error>(self, value: u16) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
     fn visit_u32<E: serde::de::Error>(self, value: u32) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
-    }
-
-    fn visit_u64<E: serde::de::Error>(self, value: u64) -> Result<Self::Value, E> {
         Ok(Date(chrono_from_untis_date(value as u32)))
     }
 }
@@ -116,8 +95,9 @@ fn chrono_from_untis_date(value: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).unwrap()
 }
 
+/// Wrapper around chrono::NaiveDate for working with Untis more easily.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct Time(NaiveTime);
+pub struct Time(pub NaiveTime);
 
 impl Time {
     pub fn to_chrono(&self) -> NaiveTime {
@@ -154,35 +134,7 @@ impl<'de> Visitor<'de> for TimeVisitor {
         formatter.write_str("an integer in the format HOURMINUTE like 1912 or 712 for 19:12")
     }
 
-    fn visit_i8<E: serde::de::Error>(self, value: i8) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_i16<E: serde::de::Error>(self, value: i16) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_i32<E: serde::de::Error>(self, value: i32) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_i64<E: serde::de::Error>(self, value: i64) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_u8<E: serde::de::Error>(self, value: u8) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_u16<E: serde::de::Error>(self, value: u16) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
     fn visit_u32<E: serde::de::Error>(self, value: u32) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-
-    fn visit_u64<E: serde::de::Error>(self, value: u64) -> Result<Self::Value, E> {
         Ok(Time(chrono_from_untis_time(value as u32)))
     }
 }
@@ -223,9 +175,23 @@ mod tests {
     }
 
     #[test]
+    fn untis_date_week_begin_is_last_monday() {
+        let date = Date(NaiveDate::from_ymd_opt(2023, 09, 01).unwrap());
+        let monday = Date(NaiveDate::from_ymd_opt(2023, 08, 28).unwrap());
+        assert_eq!(monday, date.relative_week_begin());
+    }
+
+    #[test]
     fn untis_date_week_end_is_saturday() {
         let saturday = Date::current_week_end();
         assert_eq!(saturday.0.weekday(), Weekday::Sat);
+    }
+
+    #[test]
+    fn untis_date_week_begin_is_next_saturday() {
+        let date = Date(NaiveDate::from_ymd_opt(2023, 09, 01).unwrap());
+        let monday = Date(NaiveDate::from_ymd_opt(2023, 09, 02).unwrap());
+        assert_eq!(monday, date.relative_week_end());
     }
 
     #[test]

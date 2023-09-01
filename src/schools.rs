@@ -6,30 +6,33 @@ fn get_client() -> jsonrpc::Client {
     jsonrpc::Client::new("https://mobile.webuntis.com/ms/schoolquery2")
 }
 
-pub fn search_schools(query: &str) -> Result<Vec<School>, Error> {
+/// Returns all schools matching the query or an empty vec if there are too many results.
+pub fn search(query: &str) -> Result<Vec<School>, Error> {
     let result = get_client().request(
         "searchSchool",
         vec![FindSchoolParams::Search { search: query }],
     );
-    catch_err(result)
+    catch_too_many(result)
 }
 
-pub fn get_school_by_id(id: &usize) -> Result<School, Error> {
+/// Retrieves a school by its id.
+pub fn get_by_id(id: &usize) -> Result<School, Error> {
     let result = get_client().request(
         "searchSchool",
         vec![FindSchoolParams::ById { schoolid: id }],
     );
 
-    get_first(catch_err(result)?)
+    get_first(result?)
 }
 
-pub fn get_school_by_name(name: &str) -> Result<School, Error> {
+/// Retrieves a school by it's [`login_name`](School#structfield.login_name).
+pub fn get_by_name(name: &str) -> Result<School, Error> {
     let result = get_client().request(
         "searchSchool",
         vec![FindSchoolParams::ByName { schoolname: name }],
     );
 
-    get_first(catch_err(result)?)
+    get_first(result?)
 }
 
 fn get_first(mut list: Vec<School>) -> Result<School, Error> {
@@ -40,7 +43,7 @@ fn get_first(mut list: Vec<School>) -> Result<School, Error> {
     }
 }
 
-fn catch_err(result: Result<SchoolSearchResult, Error>) -> Result<Vec<School>, Error> {
+fn catch_too_many(result: Result<SchoolSearchResult, Error>) -> Result<Vec<School>, Error> {
     match result {
         Ok(v) => Ok(v.schools),
         Err(Error::Rpc(err)) => {

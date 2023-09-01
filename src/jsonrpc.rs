@@ -1,6 +1,8 @@
 use crate::error;
 use serde::{de::DeserializeOwned, Serialize};
 
+/// Error codes contained in [Untis API errors](Error).
+/// The underlying integer can be accessed using [code.as_isize()](Self::as_isize()).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub enum ErrorCode {
     UserBlocked = -8998,
@@ -46,11 +48,12 @@ pub(crate) enum Response<T> {
     },
     Err {
         jsonrpc: String,
-        id: String,
+        id: serde_json::Value,
         error: Error,
     },
 }
 
+/// JSON-RPC error object.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Error {
     pub code: isize,

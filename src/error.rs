@@ -6,14 +6,23 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::jsonrpc;
 
+/// Represents all errors that can occur during an Untis API request.
 #[derive(Debug)]
 pub enum Error {
+    /// Error during the request itself.
     Reqwest(reqwest::Error),
+
+    /// Error while serializing/parsing data.
     Serde(serde_json::Error),
+
+    /// Error with the response HTTP status code.
     Http(reqwest::StatusCode),
+
+    /// The RPC response contained an error.
     Rpc(jsonrpc::Error),
+
+    /// No results were found.
     NotFound,
-    NoSession,
 }
 
 impl Display for Error {
@@ -24,7 +33,6 @@ impl Display for Error {
             Self::Http(status) => format!("HTTP Error: {}", status),
             Self::Rpc(error) => format!("RPC Error: {} {}", error.code, error.message),
             Self::NotFound => String::from("Resource not found"),
-            Self::NoSession => String::from("Client not authenticated"),
         };
 
         formatter.write_str(&msg)

@@ -1,23 +1,33 @@
 # untis-rs
 
-Rust library to access the webuntis jsonrpc
+Library for accessing the [Untis](https://www.untis.at) JSON-RPC API.
+
+## API
+
+This client uses the public Untis JSON-RPC API, which only has read-only, limited access.
+
+## Examples
 
 ```rust
-fn main() {
-    let mut untis = Units::new("server", "school", "user", "password");
-    let today = Local::today().naive_local();
-    
-    let info = untis.login().expect("Failed to login");
+fn main() -> Result<(), untis::Error> {
+  let results = untis::schools::search("School Name")?;
+  let school = match results.first() {
+    None => {
+      println!("No school found");
+      return Ok(());
+    },
+    Some(v) => v
+  };
 
-    let _statusdata  = untis.status_data()                      .expect("Failed to get status data" );
-    let _holidays    = untis.holidays()                         .expect("Failed to get holidays"    );
-    let _rooms       = untis.rooms()                            .expect("Failed to get rooms"       );
-    let _classes     = untis.classes()                          .expect("Failed to get classes"     );
-    let _subjects    = untis.subjects()                         .expect("Failed to get subjects"    );
-    let _timetable   = untis.timetable(info.class_id, 1, today) .expect("Failed to get timetable"   );
-    let _departments = untis.departments()                      .expect("Failed to get departments" );
-    // teachers
+  let mut client = school.client_login("username", "password")?;
 
-    untis.logout().expect("Failed to logout");
+  let timetable = client.own_timetable_current_week()?;
+
+  // profit
+
+  client.logout()?;
+  Ok(())
 }
 ```
+
+For more examples, see the `examples/` directory.
