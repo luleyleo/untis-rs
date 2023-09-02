@@ -32,7 +32,7 @@ impl Client {
         let params = params::AuthenticateParams {
             client: "untis-rs",
             user: username,
-            password: password,
+            password,
         };
         let mut rpc_client = jsonrpc::Client::new(&make_untis_url(server, school));
         let session: Session = rpc_client.request("authenticate", params)?;
