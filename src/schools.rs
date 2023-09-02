@@ -36,7 +36,7 @@ pub fn get_by_name(name: &str) -> Result<School, Error> {
 }
 
 fn get_first(mut list: Vec<School>) -> Result<School, Error> {
-    if list.is_empty() {
+    if list.len() == 0 {
         Err(Error::NotFound)
     } else {
         Ok(list.swap_remove(0))

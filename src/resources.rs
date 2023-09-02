@@ -337,7 +337,7 @@ impl<'de> Deserialize<'de> for LessonCode {
         Ok(match String::deserialize(deserializer)?.as_str() {
             "irregular" => LessonCode::Irregular,
             "cancelled" => LessonCode::Cancelled,
-            _ => LessonCode::Regular,
+            "regular" | _ => LessonCode::Regular,
         })
     }
 }
@@ -360,7 +360,7 @@ impl<'de> Deserialize<'de> for LessonType {
             "sb" => LessonType::Standby,
             "bs" => LessonType::BreakSupervision,
             "ex" => LessonType::Exam,
-            _ => LessonType::Lesson,
+            "ls" | _ => LessonType::Lesson,
         })
     }
 }

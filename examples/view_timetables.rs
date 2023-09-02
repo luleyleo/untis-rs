@@ -1,3 +1,5 @@
+use untis;
+
 ///
 /// This example shows how you can access a list of your school's teachers and how
 /// you can view the timetables of other people/assets (i.e. rooms). Note that your
@@ -28,8 +30,8 @@ fn main() -> Result<(), untis::Error> {
             println!(
                 "{}, {}-{}",
                 weekday(lesson.date),
-                *lesson.start_time,
-                *lesson.end_time
+                lesson.start_time.to_string(),
+                lesson.end_time.to_string()
             )
         }
 

@@ -1,3 +1,6 @@
+use chrono;
+use untis;
+
 ///
 /// This example shows a basic usecase of searching for a specific school
 /// and then retrieving a user's own timetable.

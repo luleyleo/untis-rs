@@ -2,7 +2,7 @@ use chrono::{Datelike, Duration, Local, NaiveDate, NaiveTime};
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 use std::ops::Deref;
 
-/// Wrapper around `chrono::NaiveDate` for working with Untis more easily.
+/// Wrapper around chrono::NaiveDate for working with Untis more easily.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Date(pub NaiveDate);
 
@@ -25,7 +25,7 @@ impl Date {
     /// Returns the last start of the week before this date.
     pub fn relative_week_begin(&self) -> Self {
         let days_from_monday = self.weekday().num_days_from_monday();
-        let monday = self.0 - Duration::days(i64::from(days_from_monday));
+        let monday = self.0 - Duration::days(days_from_monday as i64);
         Date(monday)
     }
 
@@ -73,7 +73,8 @@ impl<'de> Deserialize<'de> for Date {
 
 fn chrono_to_untis_date(date: NaiveDate) -> u32 {
     let string = format!("{}", date.format("%Y%m%d"));
-    string.parse::<u32>().unwrap()
+    let number = string.parse::<u32>().unwrap();
+    number
 }
 
 fn chrono_from_untis_date(value: u32) -> NaiveDate {
@@ -159,8 +160,8 @@ mod tests {
 
     #[test]
     fn untis_date_week_begin_is_last_monday() {
-        let date = Date(NaiveDate::from_ymd_opt(2023, 9, 1).unwrap());
-        let monday = Date(NaiveDate::from_ymd_opt(2023, 8, 28).unwrap());
+        let date = Date(NaiveDate::from_ymd_opt(2023, 09, 01).unwrap());
+        let monday = Date(NaiveDate::from_ymd_opt(2023, 08, 28).unwrap());
         assert_eq!(monday, date.relative_week_begin());
     }
 
@@ -172,8 +173,8 @@ mod tests {
 
     #[test]
     fn untis_date_week_begin_is_next_saturday() {
-        let date = Date(NaiveDate::from_ymd_opt(2023, 9, 1).unwrap());
-        let monday = Date(NaiveDate::from_ymd_opt(2023, 9, 2).unwrap());
+        let date = Date(NaiveDate::from_ymd_opt(2023, 09, 01).unwrap());
+        let monday = Date(NaiveDate::from_ymd_opt(2023, 09, 02).unwrap());
         assert_eq!(monday, date.relative_week_end());
     }
 
