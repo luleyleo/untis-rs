@@ -28,8 +28,6 @@
 //! ```
 //! For more examples, see the `examples/` directory.
 
-#![feature(let_chains)]
-
 #[macro_use]
 extern crate serde_derive;
 
