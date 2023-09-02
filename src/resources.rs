@@ -1,12 +1,10 @@
 use crate::datetime::{Date, Time};
-use serde::de::{Deserialize, Visitor};
+use serde::de::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::collections::HashMap;
 
 /// The different types of elements that exist in the Untis API.
-#[derive(
-    Serialize_repr, Deserialize_repr, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug,
-)]
+#[derive(Serialize_repr, Deserialize_repr, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 #[repr(u8)]
 pub enum ElementType {
     Class = 1,
@@ -18,7 +16,7 @@ pub enum ElementType {
 
 impl ElementType {
     pub fn as_u8(&self) -> u8 {
-        *self as u8
+        self.clone() as u8
     }
 }
 
@@ -95,6 +93,23 @@ pub struct StatusDataItem {
 
     /// Background color, formatted as `RRGGBB`.
     pub back_color: String,
+}
+
+/// A schoolyear.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Schoolyear {
+    /// The schoolyears's id, unique within this school.
+    pub id: usize,
+
+    /// The schoolyear's name.
+    pub name: String,
+
+    /// The schoolyear's start date.
+    pub start_date: Date,
+
+    /// The schoolyear's end date.
+    pub end_date: Date,
 }
 
 /// A school holiday.
@@ -254,8 +269,6 @@ pub struct Student {
     pub gender: String,
 }
 
-pub type Timetable = Vec<Lesson>;
-
 /// A school lesson.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -272,8 +285,23 @@ pub struct Lesson {
     /// The lesson's end time.
     pub end_time: Time,
 
+    /// The type of lesson.
+    #[serde(rename = "lstype", default)]
+    pub lesson_type: LessonType,
+
     /// The lesson's code.
+    #[serde(default)]
     pub code: LessonCode,
+
+    /// Unique id for this specific schedule.
+    pub lsnumber: usize,
+
+    /// Info Text for this specific lesson.
+    #[serde(default)]
+    pub lstext: String,
+
+    /// Possible substitution text.
+    pub subst_text: Option<String>,
 
     /// The classes that are part of this lesson.
     #[serde(rename = "kl")]
@@ -306,33 +334,45 @@ pub enum LessonCode {
 
 impl<'de> Deserialize<'de> for LessonCode {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_str(LessonCodeVisitor)
+        Ok(match String::deserialize(deserializer)?.as_str() {
+            "irregular" => LessonCode::Irregular,
+            "cancelled" => LessonCode::Cancelled,
+            "regular" | _ => LessonCode::Regular,
+        })
     }
 }
 
-struct LessonCodeVisitor;
+/// Represents the type of lesson.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash, Debug, Serialize)]
+pub enum LessonType {
+    #[default]
+    Lesson,
+    OfficeHour,
+    Standby,
+    BreakSupervision,
+    Exam,
+}
 
-impl<'de> Visitor<'de> for LessonCodeVisitor {
-    type Value = LessonCode;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("Expected a code of '', 'irregular', 'cancelled', or None")
-    }
-
-    fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
-        match v {
-            "irregular" => Ok(LessonCode::Irregular),
-            "cancelled" => Ok(LessonCode::Cancelled),
-            "regular" | _ => Ok(LessonCode::Regular),
-        }
+impl<'de> Deserialize<'de> for LessonType {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        Ok(match String::deserialize(deserializer)?.as_str() {
+            "oh" => LessonType::OfficeHour,
+            "sb" => LessonType::Standby,
+            "bs" => LessonType::BreakSupervision,
+            "ex" => LessonType::Exam,
+            "ls" | _ => LessonType::Lesson,
+        })
     }
 }
 
 /// Represents an element that is part of a lesson.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct IdItem {
     /// The element's id.
     pub id: isize,
+
+    /// The element's short name.
+    pub name: String,
 
     /// If this element is a substitute, this is the id of the original element.
     #[serde(rename = "original_id")]

@@ -1,20 +1,18 @@
+use chrono::TimeZone;
+
 use crate::{datetime::Date, error::Error, jsonrpc, params, resources::*, Session};
 
 /// Client for accessing the Untis API. Can be constructed by [`Client::login()`](Self::login) or [`School::client_login()`](School::client_login).
-/// Please call [`client.logout()`](Self::logout)) after you're done to free resources on Untis' servers.
 ///
 /// # Example
 /// ```rust
-/// # fn main() {
 /// let result = untis::Client::login("server.webuntis.com", "school", "username", "password");
 /// match result {
 ///     Err(err) => println!("{}", err),
 ///     Ok(client) => {
 ///         let info = client.session();
-///         client.logout();
 ///     }
 /// }
-/// # }
 /// ```
 pub struct Client {
     rpc_client: jsonrpc::Client,
@@ -23,10 +21,8 @@ pub struct Client {
 
 impl Client {
     /// Method for creating a new session.
-    /// The `server` parameter represents the domain that the school's Untis instance is hosted on, like `ikarus.webuntis.com`.
-    /// One way to find out a school's server is using the [`untis::schools`](crate::schools) module.
-    ///
-    /// You can get the `school` parameter from [`School.login_name`](crate::School#structfield.login_name).
+    /// The `server` and `school` parameter both depend on the school that the user is part of; You can get `server` from
+    /// [`School.server`](crate::School::server) and `school` from [`School.login_name`](crate::School::login_name).
     pub fn login(
         server: &str,
         school: &str,
@@ -51,9 +47,25 @@ impl Client {
         &self.session
     }
 
+    /// Returns the last time that any timetable at this school was updated.
+    pub fn last_update_time(&mut self) -> Result<chrono::DateTime<chrono::Utc>, Error> {
+        let ts: i64 = self.rpc_client.request("getLatestImportTime", ())?;
+        Ok(chrono::Utc.timestamp_millis_opt(ts).unwrap())
+    }
+
     /// Returns status data that can be used for displaying a timetable.
     pub fn status_data(&mut self) -> Result<StatusData, Error> {
         self.rpc_client.request("getStatusData", ())
+    }
+
+    /// Retrieves the current schoolyear.
+    pub fn current_schoolyear(&mut self) -> Result<Schoolyear, Error> {
+        self.rpc_client.request("getCurrentSchoolyear", ())
+    }
+
+    /// Retrieves a list of all schoolyears.
+    pub fn schoolyears(&mut self) -> Result<Vec<Schoolyear>, Error> {
+        self.rpc_client.request("getSchoolyears", ())
     }
 
     /// Retrieves the holidays in the current schoolyear.
@@ -87,17 +99,17 @@ impl Client {
     }
 
     /// Retrieves the user's own timetable between now and a given date.
-    pub fn own_timetable_until(&mut self, end_date: &Date) -> Result<Timetable, Error> {
+    pub fn own_timetable_until(&mut self, end_date: &Date) -> Result<Vec<Lesson>, Error> {
         self.own_timetable_between(&Date::today(), end_date)
     }
 
     /// Retrieves the users's own timetable for the current week.
-    pub fn own_timetable_current_week(&mut self) -> Result<Timetable, Error> {
+    pub fn own_timetable_current_week(&mut self) -> Result<Vec<Lesson>, Error> {
         self.own_timetable_for_week(&Date::today())
     }
 
     /// Retrieves the users's own timetable for the week that a given date is in.
-    pub fn own_timetable_for_week(&mut self, date: &Date) -> Result<Timetable, Error> {
+    pub fn own_timetable_for_week(&mut self, date: &Date) -> Result<Vec<Lesson>, Error> {
         self.own_timetable_between(&date.relative_week_begin(), &date.relative_week_end())
     }
 
@@ -106,7 +118,7 @@ impl Client {
         &mut self,
         start_date: &Date,
         end_date: &Date,
-    ) -> Result<Timetable, Error> {
+    ) -> Result<Vec<Lesson>, Error> {
         self.timetable_between(
             &self.session.person_id.clone(),
             &self.session.person_type.clone(),
@@ -121,7 +133,7 @@ impl Client {
         id: &usize,
         ty: &ElementType,
         end_date: &Date,
-    ) -> Result<Timetable, Error> {
+    ) -> Result<Vec<Lesson>, Error> {
         self.timetable_between(id, ty, &Date::today(), end_date)
     }
 
@@ -130,7 +142,7 @@ impl Client {
         &mut self,
         id: &usize,
         ty: &ElementType,
-    ) -> Result<Timetable, Error> {
+    ) -> Result<Vec<Lesson>, Error> {
         self.timetable_for_week(id, ty, &Date::today())
     }
 
@@ -140,7 +152,7 @@ impl Client {
         id: &usize,
         ty: &ElementType,
         date: &Date,
-    ) -> Result<Timetable, Error> {
+    ) -> Result<Vec<Lesson>, Error> {
         self.timetable_between(
             id,
             ty,
@@ -156,12 +168,23 @@ impl Client {
         ty: &ElementType,
         start_date: &Date,
         end_date: &Date,
-    ) -> Result<Timetable, Error> {
+    ) -> Result<Vec<Lesson>, Error> {
         let params = params::TimetableParams {
-            id,
-            ty,
-            start_date,
-            end_date,
+            options: &params::TimetableParamsOpts {
+                element: &params::TimetableParamsElem { id, ty },
+                start_date,
+                end_date,
+                show_booking: &true,
+                show_info: &true,
+                show_subst_text: &true,
+                show_ls_text: &true,
+                show_ls_number: &true,
+                show_student_group: &true,
+                class_fields: &["id", "name"],
+                room_fields: &["id", "name"],
+                subject_fields: &["id", "name"],
+                teacher_fields: &["id", "name"],
+            },
         };
         self.rpc_client.request("getTimetable", params)
     }
@@ -171,9 +194,14 @@ impl Client {
         self.rpc_client.request("getDepartments", ())
     }
 
-    /// Quits the current session.
-    pub fn logout(mut self) -> Result<(), Error> {
+    fn logout(&mut self) -> Result<(), Error> {
         self.rpc_client.request("logout", ())
+    }
+}
+
+impl Drop for Client {
+    fn drop(&mut self) {
+        _ = self.logout();
     }
 }
 

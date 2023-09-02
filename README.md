@@ -25,7 +25,6 @@ fn main() -> Result<(), untis::Error> {
 
   // profit
 
-  client.logout()?;
   Ok(())
 }
 ```

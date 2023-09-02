@@ -29,13 +29,11 @@ fn main() -> Result<(), untis::Error> {
     let date = chrono::Local::now().date_naive() + chrono::Duration::weeks(2);
 
     // Get the client's own timetable until 2 weeks from now.
-    let timetable = client.own_timetable_until(&untis::Date(date))?;
+    let timetable = client.own_timetable_until(&date.into())?;
 
     for lesson in timetable {
         println!("{:?}", lesson);
     }
-
-    client.logout()?;
 
     Ok(())
 }

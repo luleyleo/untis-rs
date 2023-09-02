@@ -1,7 +1,5 @@
 use chrono::{Datelike, Duration, Local, NaiveDate, NaiveTime};
-use serde::de::Visitor;
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt;
 use std::ops::Deref;
 
 /// Wrapper around chrono::NaiveDate for working with Untis more easily.
@@ -41,7 +39,13 @@ impl Date {
 
     /// Returns the inner `NaiveDate`.
     pub fn to_chrono(&self) -> NaiveDate {
-        self.0
+        **self
+    }
+}
+
+impl From<NaiveDate> for Date {
+    fn from(value: NaiveDate) -> Self {
+        Date(value)
     }
 }
 
@@ -61,22 +65,9 @@ impl Serialize for Date {
 
 impl<'de> Deserialize<'de> for Date {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Date, D::Error> {
-        deserializer.deserialize_u32(DateVisitor)
-    }
-}
-
-struct DateVisitor;
-
-impl<'de> Visitor<'de> for DateVisitor {
-    type Value = Date;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter
-            .write_str("an integer in the format YEARMONTHDAY like 20180316 for the 16. March 2018")
-    }
-
-    fn visit_u32<E: serde::de::Error>(self, value: u32) -> Result<Self::Value, E> {
-        Ok(Date(chrono_from_untis_date(value as u32)))
+        Ok(Date(chrono_from_untis_date(u32::deserialize(
+            deserializer,
+        )?)))
     }
 }
 
@@ -101,7 +92,13 @@ pub struct Time(pub NaiveTime);
 
 impl Time {
     pub fn to_chrono(&self) -> NaiveTime {
-        self.0
+        **self
+    }
+}
+
+impl From<NaiveTime> for Time {
+    fn from(value: NaiveTime) -> Self {
+        Time(value)
     }
 }
 
@@ -115,42 +112,29 @@ impl Deref for Time {
 
 impl Serialize for Time {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_u32(chrono_to_untis_time(**self))
+        serializer.serialize_u16(chrono_to_untis_time(**self))
     }
 }
 
 impl<'de> Deserialize<'de> for Time {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Time, D::Error> {
-        deserializer.deserialize_u32(TimeVisitor)
+        Ok(Time(chrono_from_untis_time(u16::deserialize(
+            deserializer,
+        )?)))
     }
 }
 
-struct TimeVisitor;
-
-impl<'de> Visitor<'de> for TimeVisitor {
-    type Value = Time;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("an integer in the format HOURMINUTE like 1912 or 712 for 19:12")
-    }
-
-    fn visit_u32<E: serde::de::Error>(self, value: u32) -> Result<Self::Value, E> {
-        Ok(Time(chrono_from_untis_time(value as u32)))
-    }
-}
-
-fn chrono_to_untis_time(time: NaiveTime) -> u32 {
+fn chrono_to_untis_time(time: NaiveTime) -> u16 {
     let string = format!("{}", time.format("%k%M"));
-    let number = string.trim().parse::<u32>().unwrap();
+    let number = string.trim().parse::<u16>().unwrap();
     number
 }
 
-fn chrono_from_untis_time(value: u32) -> NaiveTime {
-    let string = format!("{}", value);
+fn chrono_from_untis_time(value: u16) -> NaiveTime {
+    let string = value.to_string();
     let hour_len = if string.len() == 3 { 1 } else { 2 };
     let hours = string[0..hour_len].parse::<u32>().unwrap();
     let mins = string[hour_len..(hour_len + 2)].parse::<u32>().unwrap();
-
     NaiveTime::from_hms_opt(hours, mins, 0).unwrap()
 }
 

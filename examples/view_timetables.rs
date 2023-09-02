@@ -38,8 +38,6 @@ fn main() -> Result<(), untis::Error> {
         println!();
     }
 
-    client.logout()?;
-
     Ok(())
 }
 
