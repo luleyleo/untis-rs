@@ -22,7 +22,7 @@ pub fn get_by_id(id: &usize) -> Result<School, Error> {
         vec![FindSchoolParams::ById { schoolid: id }],
     );
 
-    get_first(result?)
+    get_first(catch_too_many(result)?)
 }
 
 /// Retrieves a school by it's [`login_name`](School#structfield.login_name).
@@ -32,7 +32,7 @@ pub fn get_by_name(name: &str) -> Result<School, Error> {
         vec![FindSchoolParams::ByName { schoolname: name }],
     );
 
-    get_first(result?)
+    get_first(catch_too_many(result)?)
 }
 
 fn get_first(mut list: Vec<School>) -> Result<School, Error> {

@@ -242,7 +242,12 @@ pub struct Teacher {
     /// Whether the teacher is generally available or not used in the system.
     pub active: bool,
 
-    pub dids: Vec<IdItem>,
+    pub dids: Vec<DidItem>,
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub struct DidItem {
+    id: usize,
 }
 
 /// Represents a student.
