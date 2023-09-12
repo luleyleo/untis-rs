@@ -1,47 +1,52 @@
-use std;
-use std::fmt::{self, Display, Formatter};
-use std::convert::From;
 use reqwest;
 use serde_json;
+use std;
+use std::convert::From;
+use std::fmt::{self, Display, Formatter};
 
+use crate::jsonrpc;
+
+/// Represents all errors that can occur during an Untis API request.
 #[derive(Debug)]
 pub enum Error {
+    /// Error during the request itself.
     Reqwest(reqwest::Error),
-    SerdeJSON(serde_json::Error),
+
+    /// Error while serializing/parsing data.
+    Serde(serde_json::Error),
+
+    /// Error with the response HTTP status code.
     Http(reqwest::StatusCode),
-    NoSession,
+
+    /// The RPC response contained an error.
+    Rpc(jsonrpc::Error),
+
+    /// No results were found.
+    NotFound,
 }
 
 impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
-        let msg = match *self {
-            Error::Http(ref status) => format!("Http error with status code: {}", status),
-            _ => std::error::Error::description(self).to_owned(),
+        let msg = match self {
+            Self::Reqwest(err) => format!("Reqwest error: {}", err.to_string()),
+            Self::Serde(err) => format!("Serde Error: {}", err.to_string()),
+            Self::Http(status) => format!("HTTP Error: {}", status),
+            Self::Rpc(error) => format!("RPC Error: {} {}", error.code, error.message),
+            Self::NotFound => String::from("Resource not found"),
         };
 
         formatter.write_str(&msg)
     }
 }
 
-impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Reqwest(ref err) => err.description(),
-            Error::SerdeJSON(ref err) => err.description(),
-            Error::Http(_) => "The Http request didn't succeed.",
-            Error::NoSession => "This method can't be called without a session.",
-        }
-    }
-}
-
 impl From<reqwest::Error> for Error {
     fn from(err: reqwest::Error) -> Self {
-        Error::Reqwest(err)
+        Self::Reqwest(err)
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
-        Error::SerdeJSON(err)
+        Self::Serde(err)
     }
 }
