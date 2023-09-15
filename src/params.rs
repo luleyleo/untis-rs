@@ -42,7 +42,7 @@ pub struct TimetableParamsOpts<'a> {
 
 #[derive(Serialize)]
 pub struct TimetableParamsElem<'a> {
-    pub id: &'a usize,
+    pub id: &'a isize,
     #[serde(rename = "type")]
     pub ty: &'a ElementType,
 }

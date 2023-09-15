@@ -70,7 +70,7 @@ pub struct Session {
     pub class_id: usize,
 
     /// The user's id.
-    pub person_id: usize,
+    pub person_id: isize,
 
     /// The user's element type (Teacher or Student).
     pub person_type: ElementType,
