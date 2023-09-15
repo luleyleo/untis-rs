@@ -12,6 +12,8 @@ pub enum ElementType {
     Subject,
     Room,
     Student,
+    #[serde(other)]
+    Other,
 }
 
 impl ElementType {
