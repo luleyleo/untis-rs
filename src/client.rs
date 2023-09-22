@@ -130,7 +130,7 @@ impl Client {
     /// Retrieves an element's timetable between now and a given date.
     pub fn timetable_until(
         &mut self,
-        id: &usize,
+        id: &isize,
         ty: &ElementType,
         end_date: &Date,
     ) -> Result<Vec<Lesson>, Error> {
@@ -140,7 +140,7 @@ impl Client {
     /// Retrieves an element's timetable for the current week.
     pub fn timetable_current_week(
         &mut self,
-        id: &usize,
+        id: &isize,
         ty: &ElementType,
     ) -> Result<Vec<Lesson>, Error> {
         self.timetable_for_week(id, ty, &Date::today())
@@ -149,7 +149,7 @@ impl Client {
     /// Retrieves an element's timetable for the week that a given date is in.
     pub fn timetable_for_week(
         &mut self,
-        id: &usize,
+        id: &isize,
         ty: &ElementType,
         date: &Date,
     ) -> Result<Vec<Lesson>, Error> {
@@ -164,7 +164,7 @@ impl Client {
     /// Retrieves an element's own timetable between two dates.
     pub fn timetable_between(
         &mut self,
-        id: &usize,
+        id: &isize,
         ty: &ElementType,
         start_date: &Date,
         end_date: &Date,
