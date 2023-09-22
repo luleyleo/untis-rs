@@ -320,6 +320,10 @@ pub struct Lesson {
     #[serde(rename = "ro")]
     pub rooms: Vec<IdItem>,
 
+    /// The teachers which are teaching this lesson.
+    #[serde(rename = "te")]
+    pub teachers: Vec<IdItem>,
+
     #[serde(default)]
     pub statflags: String,
 
