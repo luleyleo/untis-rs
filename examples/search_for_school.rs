@@ -1,5 +1,3 @@
-use untis;
-
 ///
 /// This example shows a basic usecase of searching for schools.
 ///

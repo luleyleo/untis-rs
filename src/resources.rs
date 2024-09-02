@@ -1,10 +1,9 @@
 use crate::datetime::{Date, Time};
-use serde::de::Deserialize;
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// The different types of elements that exist in the Untis API.
-#[derive(Serialize_repr, Deserialize_repr, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 #[repr(u8)]
 pub enum ElementType {
     Class = 1,

@@ -73,8 +73,7 @@ impl<'de> Deserialize<'de> for Date {
 
 fn chrono_to_untis_date(date: NaiveDate) -> u32 {
     let string = format!("{}", date.format("%Y%m%d"));
-    let number = string.parse::<u32>().unwrap();
-    number
+    string.parse::<u32>().unwrap()
 }
 
 fn chrono_from_untis_date(value: u32) -> NaiveDate {
@@ -139,6 +138,7 @@ fn chrono_from_untis_time(value: u16) -> NaiveTime {
 }
 
 #[cfg(test)]
+#[allow(clippy::zero_prefixed_literal)]
 mod tests {
     use super::*;
     use chrono::Weekday;

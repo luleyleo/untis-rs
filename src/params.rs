@@ -1,4 +1,5 @@
 use crate::{datetime::Date, ElementType};
+use serde::Serialize;
 
 #[derive(Serialize)]
 #[serde(untagged)]

@@ -28,9 +28,6 @@
 //! ```
 //! For more examples, see the `examples/` directory.
 
-#[macro_use]
-extern crate serde_derive;
-
 mod client;
 mod datetime;
 mod error;
