@@ -1,5 +1,5 @@
 use crate::error;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 /// Error codes contained in [Untis API errors](Error).
 /// The underlying integer can be accessed using [code.as_isize()](Self::as_isize()).

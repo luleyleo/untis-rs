@@ -1,6 +1,3 @@
-use reqwest;
-use serde_json;
-use std;
 use std::convert::From;
 use std::fmt::{self, Display, Formatter};
 
@@ -28,8 +25,8 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         let msg = match self {
-            Self::Reqwest(err) => format!("Reqwest error: {}", err.to_string()),
-            Self::Serde(err) => format!("Serde Error: {}", err.to_string()),
+            Self::Reqwest(err) => format!("Reqwest error: {}", err),
+            Self::Serde(err) => format!("Serde Error: {}", err),
             Self::Http(status) => format!("HTTP Error: {}", status),
             Self::Rpc(error) => format!("RPC Error: {} {}", error.code, error.message),
             Self::NotFound => String::from("Resource not found"),
