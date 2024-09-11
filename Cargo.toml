@@ -6,7 +6,7 @@ keywords = ["untis", "webuntis"]
 categories = ["api-bindings", "data-structures"]
 license = "MIT"
 readme = "README.md"
-version = "1.0.0"
+version = "0.3.0"
 authors = ["Leopold Luley <mail@leopoldluley.de>"]
 edition = "2021"
 
