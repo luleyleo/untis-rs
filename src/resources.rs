@@ -321,7 +321,7 @@ pub struct Lesson {
     pub rooms: Vec<IdItem>,
 
     /// The teachers which are teaching this lesson.
-    #[serde(rename = "te")]
+    #[serde(rename = "te", default)]
     pub teachers: Vec<IdItem>,
 
     #[serde(default)]
